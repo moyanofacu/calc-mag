@@ -525,7 +525,7 @@ c      DO j = 1, 15000
          READ(52,*,END=232,ERR=232)
       ENDDO
 
-      DO WHILE(.TRUE.)  ! para que lea hasta terminar el archivo JAP
+c      DO WHILE(.TRUE.)  ! para que lea hasta terminar el archivo JAP
 C     LEO LAS CANTIDADES DEL TRACK .TEFF
          READ(52,*,END=232,ERR=232) TE, TELOG, GLOG, EDAD6LOG, XMASS,
      &        xlumi, X1H_sup, X2H_sup, X3He_sup, X4He_sup
@@ -546,16 +546,27 @@ c
 c         
 c     CALL ATMOSFERA (GSUP,TE,Xz,EX0,KALL,IDEAL,FDIL,IBIN,IERROR)
  613     write(*,*) "EN 613"
-         NK=4000      
-      CALL BLACKBODY(NK,FCL,TE,W)
+c         NK=4000      
+c      CALL BLACKBODY(NK,FCL,TE,W)
 c         do i=1,100
 c            WRITE(*,*) fcl(i)
 c     enddo
-      CALL COLORES_NUEVO(Fcl,W,NK,EX0,TE,G,To,IHAKU)
+         OPEN(UNIT=70, FILE="ob.txt", status="OLD")
+         nk=0
+c         te=32000.
+         do while(.true.)
+            read(70,*,end=270) w(nk), fcl(nk)
+            w(nk)=10.d0**w(nk)
+            fcl(nk)=10.d0**fcl(nk)
+            write(*,*) w(nk),fcl(nk)
+            nk=nk+1
+         enddo
+c   
+ 270  CALL COLORES_NUEVO(Fcl,W,NK,EX0,TE,G,To,IHAKU)
       CALL FLUSH(54)
-      ENDDO                     !WHILE
-      TE=35000
-      CALL BLACKBODY(NK,FCL,TE,W)
+c      ENDDO                     !WHILE
+c      TE=35000
+c      CALL BLACKBODY(NK,FCL,TE,W)
       
  232  CLOSE(54)
       CLOSE(52)
@@ -641,13 +652,17 @@ C      ENDDO
 C
 C     Calculo todas las magnitudes
 C
-      DILUCION= EX0 / 3.085678D9 ! radio estelar(10^10cm)/10parsec(10^10 cm)
-      CORR = - 2.5D0 * DLOG10(3.14159D0 * DILUCION * DILUCION)
+c      DILUCION= EX0 / 3.085678D9 ! radio estelar(10^10cm)/10parsec(10^10 cm)
+c     CORR = - 2.5D0 * DLOG10(3.14159D0 * DILUCION * DILUCION)
+      corr=0.
       DO IC=1, NCOL
+         itype(ic)=3
+         write(*,*) itype(ic)
          DO I=1, NFREQ(IC)
 c     Longitud de onda de los filtros
             FILT_WVL(I)= FILT_TABULADO(I,IC,1)
          ENDDO
+         WRITE(*,*) "ITYPE(IC)",ITYPE(IC)
          IF (ITYPE(IC) .LT. 2) THEN
             DO I=1,NK
                Y(I)= CLUZ*1.d8*Fcl(I)/(W(I)*W(I)) ! flujo sup.:erg/(cm^2 seg A)
@@ -668,7 +683,16 @@ c     Longitud de onda de los filtros
             DO I=1, NFREQ(IC)
                FILT_TRAN(I)= FILT_TABULADO(I,IC,2) / FILT_WVL(I)
             ENDDO
+         ELSEIF (ITYPE(IC).EQ. 3) THEN
+            DO I=1,NK
+               Y(I)= Fcl(I)     ! flujo sup.:erg/(cm^2 seg A)
+            ENDDO
+            DO I=1, NFREQ(IC)
+               FILT_TRAN(I)= FILT_TABULADO(I,IC,2) * FILT_WVL(I)
+            ENDDO
          ENDIF
+C      ENDDO
+C         ENDIF
 C
 C Calculo de la magnitud
          CALL INT_FIL2(NK,W,Y,FILT_WVL,FILT_TRAN,NFREQ(IC),SS,EFF_AREA)
@@ -738,6 +762,9 @@ C                           *************
       else                     ! imprimo como viene
          WRITE(54,FORMAT_COLOR) TE,LOG10(G),Xlumi,XEDAD,1.D0-XHY,
      &        BC,DMAG_V,(BANDA(I),I=1,NBAND),(COLOR(I),I=1,NIND)
+         WRITE(*,FORMAT_COLOR) TE,LOG10(G),Xlumi,XEDAD,1.D0-XHY,
+     &        BC,DMAG_V,(BANDA(I),I=1,NBAND),(COLOR(I),I=1,NIND)
+
       endif      
  60   RETURN
 c      
