@@ -54,6 +54,8 @@
      &     0.0d0, 0.0d0 ,0.0d0, 0.0d0, 0.0d0,
      &     0.0d0, 0.0d0 ,0.0d0, 0.0d0, 0.0d0,
      &     0.0d0, 0.0d0 ,0.0d0, 0.0d0, 0.0d0/
+      REAL*8 CLUZ
+      PARAMETER(CLUZ=2.99792458d10)
 !
       IERROR= 0
       ICODFILTRO=0
@@ -543,7 +545,8 @@ c
          Xedad  = EDAD6LOG      ! en Myr
 !
          xedad= xedad/1.0d3     ! lo paso a Gyr
-c         
+c
+C======================================================================         
  613     write(*,*) "EN 613"
 c         NK=4000      
 c      CALL BLACKBODY(NK,FCL,TE,W)
@@ -556,7 +559,8 @@ c         te=32000.
          do while(.true.)
             read(70,*,end=270) w(nk), fcl(nk)
             w(nk)=10.d0**w(nk)
-            fcl(nk)=10.d0**fcl(nk)
+            fcl(nk)=10.d0**fcl(nk) !/3.1415926535d0
+            fcl(nk)= 1.d-8*Fcl(NK)*W(NK)*W(NK)/CLUZ !Paso a frecuencia
             write(*,*) w(nk),fcl(nk)
             nk=nk+1
          enddo
@@ -651,12 +655,13 @@ C      ENDDO
 C
 C     Calculo todas las magnitudes
 C
-c      DILUCION= EX0 / 3.085678D9 ! radio estelar(10^10cm)/10parsec(10^10 cm)
-c     CORR = - 2.5D0 * DLOG10(3.14159D0 * DILUCION * DILUCION)
+c     DILUCION= EX0 / 3.085678D9 ! radio estelar(10^10cm)/10parsec(10^10 cm)
+c      DILUCION=1.D0
+c      CORR = - 2.5D0 * DLOG10(3.14159D0 * DILUCION * DILUCION)
       corr=0.
       DO IC=1, NCOL
-         itype(ic)=3
-         write(*,*) itype(ic)
+c         itype(ic)=3
+c         write(*,*) itype(ic)
          DO I=1, NFREQ(IC)
 c     Longitud de onda de los filtros
             FILT_WVL(I)= FILT_TABULADO(I,IC,1)
@@ -682,7 +687,7 @@ c     Longitud de onda de los filtros
             DO I=1, NFREQ(IC)
                FILT_TRAN(I)= FILT_TABULADO(I,IC,2) / FILT_WVL(I)
             ENDDO
-         ELSEIF (ITYPE(IC).EQ. 3) THEN
+         ELSEIF (ITYPE(IC).EQ. 3) THEN !ESTO ES POR SI LE MANDO F_LAMBDA
             DO I=1,NK
                Y(I)= Fcl(I)     ! flujo sup.:erg/(cm^2 seg A)
             ENDDO
@@ -761,8 +766,7 @@ C                           *************
       else                     ! imprimo como viene
          WRITE(54,FORMAT_COLOR) TE,LOG10(G),Xlumi,XEDAD,1.D0-XHY,
      &        BC,DMAG_V,(BANDA(I),I=1,NBAND),(COLOR(I),I=1,NIND)
-         WRITE(*,FORMAT_COLOR) TE,LOG10(G),Xlumi,XEDAD,1.D0-XHY,
-     &        BC,DMAG_V,(BANDA(I),I=1,NBAND),(COLOR(I),I=1,NIND)
+         WRITE(*,*) "COLORES",(BANDA(I),I=1,NBAND)
 
       endif      
  60   RETURN
