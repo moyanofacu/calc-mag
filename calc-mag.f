@@ -544,7 +544,6 @@ c
 !
          xedad= xedad/1.0d3     ! lo paso a Gyr
 c         
-c     CALL ATMOSFERA (GSUP,TE,Xz,EX0,KALL,IDEAL,FDIL,IBIN,IERROR)
  613     write(*,*) "EN 613"
 c         NK=4000      
 c      CALL BLACKBODY(NK,FCL,TE,W)
