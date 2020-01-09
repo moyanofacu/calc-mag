@@ -1014,3 +1014,16 @@ c
       close(72)
        RETURN
        END
+C======================================================================
+      SUBROUTINE LEE_SED()
+      CHARACTER mod_NAME,PRE,TYPE
+      REAL*8 TEFF,GEFF,LUMI,mdot
+      OPEN(UNIT=10, FILE="modelparameters.txt", status="old")
+      READ(10,"(A10)") TYPE
+      DO I=1,3
+         READ(10)
+      ENDDO
+C      
+      CLOSE(10)
+      RETURN
+      END
