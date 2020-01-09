@@ -555,12 +555,11 @@ c            WRITE(*,*) fcl(i)
 c     enddo
          OPEN(UNIT=70, FILE="ob.txt", status="OLD")
          nk=0
-c         te=32000.
          do while(.true.)
             read(70,*,end=270) w(nk), fcl(nk)
             w(nk)=10.d0**w(nk)
             fcl(nk)=10.d0**fcl(nk) !/3.1415926535d0
-            fcl(nk)= 1.d-8*Fcl(NK)*W(NK)*W(NK)/CLUZ !Paso a frecuencia
+!            fcl(nk)= 1.d-8*Fcl(NK) !*W(NK)*W(NK)/CLUZ !Paso a frecuencia
             write(*,*) w(nk),fcl(nk)
             nk=nk+1
          enddo
@@ -568,9 +567,7 @@ c
  270  CALL COLORES_NUEVO(Fcl,W,NK,EX0,TE,G,To,IHAKU)
       CALL FLUSH(54)
 c      ENDDO                     !WHILE
-c      TE=35000
-c      CALL BLACKBODY(NK,FCL,TE,W)
-      
+c      
  232  CLOSE(54)
       CLOSE(52)
  888  FORMAT(i5,f8.0,f9.3,f12.6,1e12.3,3(f10.5),f7.2)
@@ -658,18 +655,18 @@ C
 c     DILUCION= EX0 / 3.085678D9 ! radio estelar(10^10cm)/10parsec(10^10 cm)
 c      DILUCION=1.D0
 c      CORR = - 2.5D0 * DLOG10(3.14159D0 * DILUCION * DILUCION)
-      corr=0.
+      corr=0. ! la correcion es 0 porque ya tengo el flujo a d=10 kpc
       DO IC=1, NCOL
-c         itype(ic)=3
-c         write(*,*) itype(ic)
          DO I=1, NFREQ(IC)
 c     Longitud de onda de los filtros
             FILT_WVL(I)= FILT_TABULADO(I,IC,1)
          ENDDO
          WRITE(*,*) "ITYPE(IC)",ITYPE(IC)
          IF (ITYPE(IC) .LT. 2) THEN
+c no le pido que pase a longitud de onda porque ya viene asi            
             DO I=1,NK
-               Y(I)= CLUZ*1.d8*Fcl(I)/(W(I)*W(I)) ! flujo sup.:erg/(cm^2 seg A)
+C               Y(I)= CLUZ*1.d8*Fcl(I)/(W(I)*W(I)) ! flujo sup.:erg/(cm^2 seg A)
+               Y(I)= FCL(I)
             ENDDO
             IF (ITYPE(IC) .EQ. 0) THEN
                DO I=1, NFREQ(IC)
@@ -766,7 +763,7 @@ C                           *************
       else                     ! imprimo como viene
          WRITE(54,FORMAT_COLOR) TE,LOG10(G),Xlumi,XEDAD,1.D0-XHY,
      &        BC,DMAG_V,(BANDA(I),I=1,NBAND),(COLOR(I),I=1,NIND)
-         WRITE(*,*) "COLORES",(BANDA(I),I=1,NBAND)
+         WRITE(*,*) "U B V R",(BANDA(I),I=1,NBAND)
 
       endif      
  60   RETURN
